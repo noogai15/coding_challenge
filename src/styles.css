@@ -1,0 +1,32 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+  display: flex;
+  background-color: #333333;
+  flex-direction: column;
+}
+
+.App h1 {
+  font-size: 25px;
+}
+
+.App h2 {
+  text-align: justify;
+  padding: 0 20px;
+  font-size: 20px;
+}
+
+.markers_wrapper,
+.data_wrapper {
+  display: flex;
+  padding: 12px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: start;
+  width: 200px;
+}
+
+.dropdown_wrapper {
+  display: flex;
+  flex-direction: row;
+}
