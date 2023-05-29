@@ -1,5 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { FeatureCollection } from "geojson";
+import { Feature, FeatureCollection } from "geojson";
 import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ReactNode, useEffect, useState } from "react";
