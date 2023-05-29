@@ -1,16 +1,5 @@
-// TODO: Use MUI framework for UI components
-
-// TODO: construct types for GeoJSON data
-// Alternatively, you can import and use pre-defined from `@types/geojson`
-// type CustomJSON = ...;
-
-// TODO: Install dependencies for the assignment along with their TypeScript type definitions:
-// - Leaflet: A JS library for creating interactive 2D maps.
-// - React Leaflet: A React wrapper around the Leaflet JS library.
-// - MUI: Material UI, a React UI component library. https://mui.com/
-
 import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { FeatureCollection } from "geojson";
+import { Feature, FeatureCollection } from "geojson";
 import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ReactNode, useEffect, useState } from "react";
@@ -24,7 +13,7 @@ const markerIcon: L.Icon = new L.Icon({
 });
 
 const markerIconGreen: L.Icon = new L.Icon({
-  iconUrl: "http://leafletjs.com/examples/custom-icons/leaf-green.png",
+  iconUrl: "http://leafletjs.com/examples/custom-icons/leaf-red.png",
   iconSize: new L.Point(25, 41),
   className: "default-icon",
 });
@@ -36,24 +25,22 @@ export default function App() {
     "https://dataworks.calderdale.gov.uk/download/e7w4j/ch9/Fire_Stations.geojson";
 
   const [currentFeatureCollection, setCurrentFeatureCollection] = useState<FeatureCollection>();
-  const [dataCollection, setDataCollection] = useState<Array<FeatureCollection>>();
+  const [dataCollection, setDataCollection] = useState<Array<FeatureCollection>>([]);
   const [markerIndex, setMarkerIndex] = useState<number>(0);
-  const [position, setPosition] = useState<LatLngExpression>([
+  const [initPos, setInitPos] = useState<LatLngExpression>([
     53.79532842135068, -1.7699038084392222,
   ]);
 
   useEffect(() => {
-    let collection: Array<FeatureCollection> = [];
-    fetchGeoJson(urlChildrenCentres)
-      .then((data) => {
-        collection.push(data);
-      })
-      .then(() => {
-        fetchGeoJson(urlFireStations).then((data) => {
-          collection.push(data);
-          setDataCollection(collection);
-        });
-      });
+    async function fetchData() {
+      const collection: Array<FeatureCollection> = [];
+      const data1 = await fetchGeoJson(urlChildrenCentres);
+      collection.push(data1);
+      const data2 = await fetchGeoJson(urlFireStations);
+      collection.push(data2);
+      setDataCollection(collection);
+    }
+    fetchData();
   }, []);
 
   function handleDataChange(event: SelectChangeEvent<number>, child: ReactNode): void {
@@ -66,63 +53,67 @@ export default function App() {
 
   return (
     <div className="App">
-      <div className="dropdown_wrapper">
-        <div className="data_wrapper">
-          <FormControl fullWidth>
-            <InputLabel id="geoJson_select_label">GeoJSON Data</InputLabel>
-            <Select
-              labelId="geoJson_select_label"
-              id="geoJson_select"
-              autoWidth
-              label="geoJson_data"
-              onChange={handleDataChange}
-            >
-              <MenuItem value={0}>UK Children Centres</MenuItem>
-              <MenuItem value={1}>UK Fire Stations</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-        <div className="markers_wrapper">
-          {currentFeatureCollection && (
+      <div className="app_wrapper">
+        <h2>List of Children Centres & Fire Stations in the UK</h2>
+        <div className="dropdown_wrapper">
+          <div className="data_wrapper">
             <FormControl fullWidth>
-              <InputLabel id="markers_select_label">Marker</InputLabel>
+              <InputLabel id="geoJson_select_label">GeoJSON Data</InputLabel>
               <Select
-                labelId="markers_select_label"
-                id="marker_select"
+                labelId="geoJson_select_label"
+                id="geoJson_select"
                 autoWidth
-                label="markers_data"
-                onChange={handleMarkerChange}
+                label="geoJson_data"
+                onChange={handleDataChange}
               >
-                {currentFeatureCollection.features.map(
-                  (item, index) =>
-                    item.properties && (
-                      <MenuItem value={index} key={index}>
-                        {item.properties["Children Centre Boundary"] || item.properties["STATION"]}
-                      </MenuItem>
-                    )
-                )}
+                <MenuItem value={0}>UK Children Centres</MenuItem>
+                <MenuItem value={1}>UK Fire Stations</MenuItem>
               </Select>
             </FormControl>
-          )}
+          </div>
+          <div className="markers_wrapper">
+            {currentFeatureCollection && (
+              <FormControl fullWidth>
+                <InputLabel id="markers_select_label">Marker</InputLabel>
+                <Select
+                  labelId="markers_select_label"
+                  id="marker_select"
+                  autoWidth
+                  label="markers_data"
+                  onChange={handleMarkerChange}
+                >
+                  {currentFeatureCollection.features.map(
+                    (item, index) =>
+                      item.properties && (
+                        <MenuItem value={index} key={index}>
+                          {item.properties["Children Centre Boundary"] ||
+                            item.properties["STATION"]}
+                        </MenuItem>
+                      )
+                  )}
+                </Select>
+              </FormControl>
+            )}
+          </div>
         </div>
       </div>
       <div className="map_wrapper">
         <MapContainer
-          center={position}
+          center={initPos}
           zoom={9}
           scrollWheelZoom={false}
           style={{
-            height: "600px",
-            marginTop: "80px",
-            marginBottom: "90px",
+            width: "100%",
+            height: "100%",
           }}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           {currentFeatureCollection &&
-            getLatLong(currentFeatureCollection).map((coordinate, index) => (
+            getCoordinates(currentFeatureCollection).map((coordinate, index) => (
               <Marker
+                key={index}
                 icon={index === markerIndex ? markerIconGreen : markerIcon}
-                position={coordinate as LatLngExpression}
+                position={coordinate}
               ></Marker>
             ))}
           )
@@ -130,41 +121,28 @@ export default function App() {
       </div>
 
       {/* TODO: */}
-      {/* Implement a mechanism to switch between the GeoJSON data to be displayed.*/}
-      {/* Buttons are recommended (e.g. one button per fetched GeoJSON data) but any
-      component type or method can be used. */}
-      {/* ----------------------------------------------------------------------------- */}
-      {/* TODO:  */}
-      {/* The GeoJSON format (https://geojson.org/) uses JSON to encode various types of
-      geographical information using 2D geometry and properties.
-      Implement a mechanism to list the 'features' contained in the selected GeoJSON
-      data and a way for users to select a specific one to have it highlighted on the map. */}
-      {/* ----------------------------------------------------------------------------- */}
-      {/* TODO: */}
       {/* Add a custom Leaflet Map component here */}
       {/* <CustomMap ....> */}
     </div>
   );
 
-  function getLatLong(collection: FeatureCollection): Array<LatLngExpression> {
-    let coordinates: Array<LatLngExpression> = [];
-    collection.features.map((feature) => {
-      if (feature.geometry.type === "Point") {
-        coordinates.push([
-          feature.geometry.coordinates[1],
-          feature.geometry.coordinates[0],
-        ] as LatLngExpression);
-      }
-    });
-    return coordinates;
+  function getLatLng(feature: Feature): LatLngExpression | undefined {
+    if (feature.geometry.type === "Point") {
+      return [feature.geometry.coordinates[1], feature.geometry.coordinates[0]] as LatLngExpression;
+    }
+  }
+
+  function getCoordinates(collection: FeatureCollection): Array<LatLngExpression> {
+    return collection.features.reduce((coordinates: Array<LatLngExpression>, feature: Feature) => {
+      const latLng = getLatLng(feature);
+      if (latLng) coordinates.push(latLng);
+      return coordinates;
+    }, []);
   }
 
   async function fetchGeoJson(url: RequestInfo): Promise<FeatureCollection> {
-    let geoJson: FeatureCollection = await fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
-        return data;
-      });
+    const response = await fetch(url);
+    const geoJson: FeatureCollection = await response.json();
     return geoJson;
   }
 }
