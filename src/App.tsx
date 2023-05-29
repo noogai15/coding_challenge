@@ -2,8 +2,8 @@ import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@m
 import { FeatureCollection } from "geojson";
 import L, { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { ReactNode, useEffect, useState } from "react";
-import { fetchGeoJson } from "./api";
+import { useEffect, useState } from "react";
+import { fetchData } from "./api";
 import { inputLabelStyle, selectStyle } from "./componentStyles";
 import CustomMap from "./components/CustomMap";
 import "./styles.css";
@@ -12,21 +12,21 @@ const defaultMarkerIcon: L.Icon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
   iconSize: new L.Point(25, 41),
-  className: "default-icon",
+  className: "default_icon",
 });
 
 const selectedMarkerIcon: L.Icon = new L.Icon({
   iconUrl:
     "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
   iconSize: new L.Point(25, 41),
-  className: "default-icon",
+  className: "selected_icon",
 });
 
 export default function App() {
-  const urlChildrenCentres =
-    "https://dataworks.calderdale.gov.uk/download/20q09/7c0/Calderdale%20childrens%20centres.geojson";
-  const urlFireStations =
-    "https://dataworks.calderdale.gov.uk/download/e7w4j/ch9/Fire_Stations.geojson";
+  const urls = [
+    "https://dataworks.calderdale.gov.uk/download/20q09/7c0/Calderdale%20childrens%20centres.geojson",
+    "https://dataworks.calderdale.gov.uk/download/e7w4j/ch9/Fire_Stations.geojson",
+  ];
 
   const [currentFeatureCollection, setCurrentFeatureCollection] = useState<FeatureCollection>();
   const [dataCollection, setDataCollection] = useState<Array<FeatureCollection>>([]);
@@ -36,22 +36,16 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    async function fetchData() {
-      const collection: Array<FeatureCollection> = [];
-      const data1 = await fetchGeoJson(urlChildrenCentres);
-      collection.push(data1);
-      const data2 = await fetchGeoJson(urlFireStations);
-      collection.push(data2);
-      setDataCollection(collection);
-    }
-    fetchData();
+    fetchData(urls).then((data) => {
+      setDataCollection(data);
+    });
   }, []);
 
-  function handleGeoJsonChange(event: SelectChangeEvent<number>, child: ReactNode): void {
+  function handleGeoJsonChange(event: SelectChangeEvent<number>): void {
     setCurrentFeatureCollection(dataCollection![event.target.value as number]);
   }
 
-  function handleMarkerChange(event: SelectChangeEvent<number>, child: ReactNode): void {
+  function handleMarkerChange(event: SelectChangeEvent<number>): void {
     setMarkerIndex(event.target.value as number);
   }
 
