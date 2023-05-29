@@ -1,32 +1,55 @@
-.App {
+/* Reset styles */
+body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  background-color: #2f3335;
   font-family: sans-serif;
+  color: white;
+  vertical-align: baseline;
+}
+
+/* Headings */
+h1,
+h2,
+h3 {
+  margin: 16px;
+}
+
+.App {
   text-align: center;
   display: flex;
-  background-color: #333333;
+  flex-direction: row;
+  height: 100vh;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva,
+    Verdana, sans-serif;
+}
+
+.app_wrapper {
+  margin: 20vh 5vh 0vh;
+  display: flex;
   flex-direction: column;
-}
-
-.App h1 {
-  font-size: 25px;
-}
-
-.App h2 {
-  text-align: justify;
-  padding: 0 20px;
-  font-size: 20px;
+  align-items: center;
 }
 
 .markers_wrapper,
 .data_wrapper {
   display: flex;
-  padding: 12px;
+  margin-top: 24px;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: start;
+  align-self: center;
   width: 200px;
 }
 
 .dropdown_wrapper {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+}
+
+.map_wrapper {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
 }
